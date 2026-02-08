@@ -8,6 +8,8 @@ include(cmake/sfml.cmake)
 set(TGUI_BACKEND SFML_GRAPHICS)
 include(cmake/tgui.cmake)
 
+include(cmake/protobuf.cmake)
+
 project(${IG_PROJECT_NAME} VERSION ${IG_PROJECT_VERSION} LANGUAGES CXX)
 
 add_subdirectory(src)

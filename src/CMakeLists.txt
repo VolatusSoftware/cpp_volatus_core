@@ -23,5 +23,6 @@ target_link_libraries(example
         SFML::Audio
         SFML::Network
         TGUI::TGUI
+        protobuf::libprotobuf
 )
 

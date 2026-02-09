@@ -7,6 +7,11 @@ target_sources(example
         example.cpp
 )
 
+target_compile_definitions(example
+    PRIVATE
+        _WIN32_WINNT=0x0A00
+)
+
 target_compile_features(example
     PRIVATE
         cxx_std_20
@@ -23,6 +28,6 @@ target_link_libraries(example
         SFML::Audio
         SFML::Network
         TGUI::TGUI
-        protobuf::libprotobuf
+        volatus_proto
 )
 

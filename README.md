@@ -1,5 +1,11 @@
-# cpp_sfml_tgui_template
-Repository template for starting graphics C++ projects using SFML + TGUI
+# cpp_volatus_core
+
+
+## Prerequisites
+- CMake
+- Windows Builds
+  - MinGW64 (MSYS2 recommended)
+  - Windows SDK
 
 This template was created on Windows and expects to use the MinGW64 toolchain (via MSYS2 on my system). The ultimate goal is for this project to be cross-platform to at least the following platforms:
 - Windows

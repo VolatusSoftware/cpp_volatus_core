@@ -4,6 +4,7 @@
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
 
+#include "httplib.h"
 #include "example.hpp"
 
 bool handleEvents(sf::Window& window, tgui::Gui& gui)
@@ -30,6 +31,13 @@ int main()
 {
     sf::ContextSettings settings;
     settings.antiAliasingLevel = 8;
+
+    httplib::Client cli("http://icanhazip.com");
+
+    if (auto res = cli.Get("/"))
+    {
+        std::cout << std::format("status: {}\nbody: {}", res->status, res->body) << std::endl;
+    }
 
     sf::RenderWindow window(sf::VideoMode({800, 600}), std::format("{} Window", windowTitle),
         sf::Style::Default, sf::State::Windowed, settings);

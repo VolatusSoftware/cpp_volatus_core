@@ -1,0 +1,3 @@
+[submodule "volatus_proto"]
+	path = volatus_proto
+	url = https://github.com/VolatusSoftware/volatus_proto.git

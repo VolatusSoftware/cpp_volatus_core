@@ -1,5 +1,5 @@
 {
-    "version": 4,
+    "version": 8,
     "configurePresets": [
         {
             "name": "MinGW-Debug",
@@ -18,6 +18,13 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES"
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "example-debug",
+            "jobs": 8,
+            "configurePreset": "MinGW-Debug"
         }
     ]
 }

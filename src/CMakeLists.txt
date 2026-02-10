@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 add_subdirectory(simdjson)
+#add_subdirectory(fmtlog)
 
 add_executable(example)
 
@@ -33,5 +34,6 @@ target_link_libraries(example
         TGUI::TGUI
         volatus_proto
         simdjson
+        fmtlog-static
 )
 

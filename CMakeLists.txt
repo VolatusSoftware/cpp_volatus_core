@@ -29,6 +29,8 @@ include(cmake/tgui.cmake)
 # specific message definition .proto files.
 include(cmake/protobuf.cmake)
 
+include(cmake/fmtlog.cmake)
+
 #Define the CMake project and version as configured at the top of this file.
 # C and C++ are used as the implementation languages.
 project(${IG_PROJECT_NAME} VERSION ${IG_PROJECT_VERSION} LANGUAGES C CXX)

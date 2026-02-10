@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <TGUI/TGUI.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
+#include <fmtlog.h>
 
 #include "httplib.h"
 #include "simdjson.h"
@@ -35,13 +36,19 @@ int main()
     sf::ContextSettings settings;
     settings.antiAliasingLevel = 8;
 
+    fmtlog::startPollingThread(100000);
+
     httplib::Client cli("http://icanhazip.com");
 
     ondemand::parser parser;
     auto json = "{\"Volatus\":\"Hello\"}"_padded;
     ondemand::document doc = parser.iterate(json);
 
-    std::cout << doc["Volatus"].get_string() << " simdjson\n";
+    std::string greet {doc["Volatus"].get_string().value()};
+
+    logi("from json: {}", greet);
+
+    std::cout << greet << " simdjson\n";
 
     if (auto res = cli.Get("/"))
     {

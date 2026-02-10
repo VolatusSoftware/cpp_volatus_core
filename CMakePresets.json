@@ -19,5 +19,12 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES"
             }
         }
+    ],
+    "buildPresets": [
+        {
+            "name": "MinGW-Debug",
+            "configurePreset": "MinGW-Debug",
+            "jobs": 8
+        }
     ]
 }

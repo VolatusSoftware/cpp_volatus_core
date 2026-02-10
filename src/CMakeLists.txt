@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
+add_subdirectory(simdjson)
+
 add_executable(example)
 
 target_sources(example
@@ -7,6 +9,7 @@ target_sources(example
         example.cpp
 )
 
+#MinGW doesn't set the windows version properly, set it to Win10+
 target_compile_definitions(example
     PRIVATE
         _WIN32_WINNT=0x0A00
@@ -29,5 +32,6 @@ target_link_libraries(example
         SFML::Network
         TGUI::TGUI
         volatus_proto
+        simdjson
 )
 

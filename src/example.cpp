@@ -5,7 +5,10 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 
 #include "httplib.h"
+#include "simdjson.h"
 #include "example.hpp"
+
+using namespace simdjson;
 
 bool handleEvents(sf::Window& window, tgui::Gui& gui)
 {
@@ -33,6 +36,12 @@ int main()
     settings.antiAliasingLevel = 8;
 
     httplib::Client cli("http://icanhazip.com");
+
+    ondemand::parser parser;
+    auto json = "{\"Volatus\":\"Hello\"}"_padded;
+    ondemand::document doc = parser.iterate(json);
+
+    std::cout << doc["Volatus"].get_string() << " simdjson\n";
 
     if (auto res = cli.Get("/"))
     {

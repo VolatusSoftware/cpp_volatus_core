@@ -9,14 +9,28 @@
 
 namespace Config {
 
-//Store a bool under the hood when the type is unknown.
+//Store a monostate when the type is unknown.
 using UnknownType = std::monostate;
+using Path = std::filesystem::path;
 
-using ElementValue = std::variant<UnknownType, bool, int8_t, uint8_t,
-    int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double,
-    std::string, std::filesystem::path>;
+using ElementValue = std::variant<
+    UnknownType,
+    bool,
+    int8_t,
+    uint8_t,
+    int16_t,
+    uint16_t,
+    int32_t,
+    uint32_t,
+    int64_t,
+    uint64_t,
+    float,
+    double,
+    std::string,
+    Path
+>;
 
-// These values must match the ordering of the ElementValue variant alternatives
+// These values must match the ordering of the ElementValue alternatives above
 enum class ValueType {
     UNKNOWN,
     BOOL,
@@ -38,7 +52,7 @@ enum class ValueType {
 
 using ValueTypeInt = std::underlying_type<ValueType>::type;
 
-std::array<std::string, static_cast<ValueTypeInt>(ValueType::NUM_TYPES) > valueTypeStrings {
+std::array<std::string, static_cast<ValueTypeInt>(ValueType::NUM_TYPES)> valueTypeStrings {
     "Unknown",
     "Bool",
     "I8",
@@ -87,6 +101,7 @@ private:
 
     std::string m_name{};
 
+    //Elements do not own their relatives (Manager does), using raw pointers
     Element* m_parent = nullptr;
     std::vector<Element*> m_children{};
 };

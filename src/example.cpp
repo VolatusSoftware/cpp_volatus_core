@@ -9,6 +9,8 @@
 #include "simdjson.h"
 #include "example.hpp"
 
+#include "ConfigTree/Manager.hpp"
+
 using namespace simdjson;
 
 bool handleEvents(sf::Window& window, tgui::Gui& gui)
@@ -37,6 +39,14 @@ int main()
     settings.antiAliasingLevel = 8;
 
     fmtlog::startPollingThread(100000);
+
+    Config::Manager cfgMgr{};
+
+    Config::Element el{"ElementName"};
+    el.setValue(42);
+    std::cout << std::format("Element name: {} with type: {}\n", el.getName(), el.typeString());
+    el.setValue(4.2f);
+    std::cout << std::format("Element name: {} with type: {}\n", el.getName(), el.typeString());
 
     httplib::Client cli("http://icanhazip.com");
 

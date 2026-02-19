@@ -1,195 +1,181 @@
 #ifndef ConfigElement_hpp_
 #define ConfigElement_hpp_
 
-#include <string>
 #include <stdint.h>
-#include <vector>
-#include <map>
-#include <variant>
-#include <filesystem>
+
 #include <algorithm>
+#include <filesystem>
+#include <iterator>
+#include <map>
 #include <optional>
 #include <sstream>
-#include <iterator>
+#include <string>
+#include <variant>
+#include <vector>
 
-#include "Value.hpp"
 #include "Lookup.hpp"
+#include "Value.hpp"
 
-namespace Config
-{
+namespace Config {
 
-    std::string hierarchyString(const Hierarchy &hierarchy)
-    {
-        std::stringstream ss{};
+std::string hierarchyString(const Hierarchy& hierarchy) {
+  std::stringstream ss{};
 
-        bool first = true;
-        for (auto it = hierarchy.begin(); it != hierarchy.end(); ++it)
-        {
-            if (!first)
-            {
-                ss << ":";
-            }
-            else
-            {
-                first = false;
-            }
-
-            ss << *it;
-        }
-
-        return ss.str();
+  bool first = true;
+  for (auto it = hierarchy.begin(); it != hierarchy.end(); ++it) {
+    if (!first) {
+      ss << ":";
+    } else {
+      first = false;
     }
 
-    class Element
-    {
-    public:
-        Element(std::string_view name) : m_name{name} {}
+    ss << *it;
+  }
 
-        template <typename T>
-        Element(std::string_view name, T value);
+  return ss.str();
+}
 
-        ~Element() = default;
+class Element {
+ public:
+  Element(std::string_view name) : m_name{name} {}
 
-        std::string getName() { return m_name; }
+  template <typename T>
+  Element(std::string_view name, T value);
 
-        Manager *getOwner() { return m_owner; }
+  ~Element() = default;
 
-        void setOwner(Manager *owner) { m_owner = owner; }
+  std::string getName() { return m_name; }
 
-        // Element Value proxy methods
-        ValueType getType() { return m_value.getType(); }
-        std::string_view typeString() { return m_value.typeString(); }
-        bool isType(ValueType type) { return m_value.isType(type); }
+  Manager* getOwner() { return m_owner; }
 
-        template <typename T>
-        void setValue(const T &value) { m_value.setValue<T>(value); }
+  void setOwner(Manager* owner) { m_owner = owner; }
 
-        template <typename T>
-        const T &getValue() { return m_value.getValue<T>(); }
+  // Element Value proxy methods
+  ValueType getType() { return m_value.getType(); }
+  std::string_view typeString() { return m_value.typeString(); }
+  bool isType(ValueType type) { return m_value.isType(type); }
 
-        void setParent(Element *parent) { m_parent = parent; }
+  template <typename T>
+  void setValue(const T& value) {
+    m_value.setValue<T>(value);
+  }
 
-        Element *getParent() { return m_parent; }
+  template <typename T>
+  const T& getValue() {
+    return m_value.getValue<T>();
+  }
 
-        void addChild(Element *el);
-        bool removeChild(Element *el);
+  void setParent(Element* parent) { m_parent = parent; }
 
-        Element *lookupChild(const std::string &name);
+  Element* getParent() { return m_parent; }
 
-        bool matchesLookup(const Lookup& lookup) { return lookup.checkMatch(m_name, m_meta); }
+  void addChild(Element* el);
+  bool removeChild(Element* el);
 
-        std::vector<Element *> getChildren(); // { return m_children.; }
+  Element* lookupChild(const std::string& name);
 
-        Value *lookupMeta(const std::string &metaName);
+  bool matchesLookup(const Lookup& lookup) {
+    return lookup.checkMatch(m_name, m_meta);
+  }
 
-        template <typename T>
-        bool setMetaValue(const std::string &metaName, const T &value);
+  std::vector<Element*> getChildren();  // { return m_children.; }
 
-        Hierarchy getHierarchy();
+  Value* lookupMeta(const std::string& metaName);
 
-        std::string hierarchyString();
+  template <typename T>
+  bool setMetaValue(const std::string& metaName, const T& value);
 
-    private:
-        std::string m_name{};
+  Hierarchy getHierarchy();
 
-        Manager *m_owner = nullptr;
-        Value m_value{};
+  std::string hierarchyString();
 
-        // Elements do not own their relatives (Manager does)
-        Element *m_parent = nullptr;
-        NamedChildMap m_children{};
+ private:
+  std::string m_name{};
 
-        MetaMap m_meta{};
-    };
+  Manager* m_owner = nullptr;
+  Value m_value{};
 
-    Hierarchy Element::getHierarchy()
-    {
-        Hierarchy hierarchy{};
+  // Elements do not own their relatives (Manager does)
+  Element* m_parent = nullptr;
+  NamedChildMap m_children{};
 
-        Element *el = this;
+  MetaMap m_meta{};
+};
 
-        while (el)
-        {
-            hierarchy.push_back(el->getName());
-            el = el->getParent();
-        }
+Hierarchy Element::getHierarchy() {
+  Hierarchy hierarchy{};
 
-        std::reverse(hierarchy.begin(), hierarchy.end());
+  Element* el = this;
 
-        return hierarchy;
+  while (el) {
+    hierarchy.push_back(el->getName());
+    el = el->getParent();
+  }
+
+  std::reverse(hierarchy.begin(), hierarchy.end());
+
+  return hierarchy;
+}
+
+Element* Element::lookupChild(const std::string& name) {
+  auto it = m_children.find(name);
+
+  if (it != m_children.end()) {
+    return it->second;
+  }
+
+  return nullptr;
+}
+
+std::vector<Element*> Element::getChildren() {
+  std::vector<Element*> children{};
+  for (auto it = m_children.begin(); it != m_children.end(); ++it) {
+    children.push_back(it->second);
+  }
+
+  return children;
+}
+
+void Element::addChild(Element* el) {
+  if (el) {
+    m_children.insert_or_assign(std::string(el->getName()), el);
+    el->setParent(this);
+  }
+}
+
+bool Element::removeChild(Element* el) {
+  bool found = false;
+
+  if (el) {
+    auto it = m_children.find(el->getName());
+    if (it != m_children.end()) {
+      m_children.erase(it);
+      it->second->setParent(nullptr);
+      found = true;
     }
+  }
 
-    Element *Element::lookupChild(const std::string &name)
-    {
-        auto it = m_children.find(name);
+  return found;
+}
 
-        if (it != m_children.end())
-        {
-            return it->second;
-        }
+Value* Element::lookupMeta(const std::string& metaName) {
+  auto it = m_meta.find(metaName);
+  if (it != m_meta.end()) {
+    return &it->second;
+  }
 
-        return nullptr;
-    }
+  return nullptr;
+}
 
-    std::vector<Element *> Element::getChildren()
-    {
-        std::vector<Element *> children{};
-        for (auto it = m_children.begin(); it != m_children.end(); ++it)
-        {
-            children.push_back(it->second);
-        }
+template <typename T>
+bool Element::setMetaValue(const std::string& metaName, const T& value) {
+  Value val;
+  val.setValue(value);
 
-        return children;
-    }
+  auto result = m_meta.insert_or_assign(metaName, val);
+  return result.second;
+}
 
-    void Element::addChild(Element *el)
-    {
-        if (el)
-        {
-            m_children.insert_or_assign(std::string(el->getName()), el);
-            el->setParent(this);
-        }
-    }
+};  // namespace Config
 
-    bool Element::removeChild(Element *el)
-    {
-        bool found = false;
-
-        if (el)
-        {
-            auto it = m_children.find(el->getName());
-            if (it != m_children.end())
-            {
-                m_children.erase(it);
-                it->second->setParent(nullptr);
-                found = true;
-            }
-        }
-
-        return found;
-    }
-
-    Value *Element::lookupMeta(const std::string &metaName)
-    {
-        auto it = m_meta.find(metaName);
-        if (it != m_meta.end())
-        {
-            return &it->second;
-        }
-
-        return nullptr;
-    }
-
-    template <typename T>
-    bool Element::setMetaValue(const std::string &metaName, const T &value)
-    {
-        Value val;
-        val.setValue(value);
-
-        auto result = m_meta.insert_or_assign(metaName, val);
-        return result.second;
-    }
-
-}; // namespace
-
-#endif // ConfigElement_hpp_
+#endif  // ConfigElement_hpp_

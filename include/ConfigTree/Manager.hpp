@@ -1,37 +1,35 @@
 #ifndef ConfigManager_hpp_
 #define ConfigManager_hpp_
 
-#include <vector>
+#include <array>
 #include <map>
 #include <string>
-#include <array>
+#include <vector>
 
 #include "Element.hpp"
 
-namespace Config
-{
+namespace Config {
 
-    class Manager
-    {
-    public:
-        Manager() = default;
-        ~Manager() = default;
+class Manager {
+ public:
+  Manager() = default;
+  ~Manager() = default;
 
-        /**
-         * Returns the specified element if it already exists or creates as much
-         * of the specified hierarchy as needed and creates a new element that will
-         * be returned.
-         */
-        Element *obtainElement(const Hierarchy &hierarchy, bool canCreate = true);
+  /**
+   * Returns the specified element if it already exists or creates as much
+   * of the specified hierarchy as needed and creates a new element that will
+   * be returned.
+   */
+  Element* obtainElement(const Hierarchy& hierarchy, bool canCreate = true);
 
-        Element *createElement(const std::string &name, Element *parent = nullptr);
+  Element* createElement(const std::string& name, Element* parent = nullptr);
 
-        std::vector<Element *> lookupDescendents(const Lookup &lookup);
+  std::vector<Element*> lookupDescendents(const Lookup& lookup);
 
-    private:
-        std::map<std::vector<std::string>, Element> m_elements{};
-    };
+ private:
+  std::map<std::vector<std::string>, Element> m_elements{};
+};
 
-}; // namespace
+};  // namespace Config
 
-#endif // ConfigManager_hpp_
+#endif  // ConfigManager_hpp_

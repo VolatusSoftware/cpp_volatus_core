@@ -2,21 +2,36 @@
 #define ConfigManager_hpp_
 
 #include <vector>
+#include <map>
+#include <string>
+#include <array>
 
 #include "Element.hpp"
 
-namespace Config {
+namespace Config
+{
 
-class Manager {
-public:
-    Manager() = default;
-    ~Manager() = default;
+    class Manager
+    {
+    public:
+        Manager() = default;
+        ~Manager() = default;
 
-private:
-    std::vector<Element> m_elements;
-    std::vector<int> m_freeIndex;
-};
+        /**
+         * Returns the specified element if it already exists or creates as much
+         * of the specified hierarchy as needed and creates a new element that will
+         * be returned.
+         */
+        Element *obtainElement(const Hierarchy &hierarchy, bool canCreate = true);
 
-}; //namespace
+        Element *createElement(const std::string &name, Element *parent = nullptr);
 
-#endif //ConfigManager_hpp_
+        std::vector<Element *> lookupDescendents(const Lookup &lookup);
+
+    private:
+        std::map<std::vector<std::string>, Element> m_elements{};
+    };
+
+}; // namespace
+
+#endif // ConfigManager_hpp_

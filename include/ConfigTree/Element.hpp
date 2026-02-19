@@ -4,108 +4,192 @@
 #include <string>
 #include <stdint.h>
 #include <vector>
+#include <map>
 #include <variant>
 #include <filesystem>
+#include <algorithm>
+#include <optional>
+#include <sstream>
+#include <iterator>
 
-namespace Config {
+#include "Value.hpp"
+#include "Lookup.hpp"
 
-//Store a monostate when the type is unknown.
-using UnknownType = std::monostate;
-using Path = std::filesystem::path;
+namespace Config
+{
 
-using ElementValue = std::variant<
-    UnknownType,
-    bool,
-    int8_t,
-    uint8_t,
-    int16_t,
-    uint16_t,
-    int32_t,
-    uint32_t,
-    int64_t,
-    uint64_t,
-    float,
-    double,
-    std::string,
-    Path
->;
+    std::string hierarchyString(const Hierarchy &hierarchy)
+    {
+        std::stringstream ss{};
 
-// These values must match the ordering of the ElementValue alternatives above
-enum class ValueType {
-    UNKNOWN,
-    BOOL,
-    I8,
-    U8,
-    I16,
-    U16,
-    I32,
-    U32,
-    I64,
-    U64,
-    SGL,
-    DBL,
-    STRING,
-    PATH,
+        bool first = true;
+        for (auto it = hierarchy.begin(); it != hierarchy.end(); ++it)
+        {
+            if (!first)
+            {
+                ss << ":";
+            }
+            else
+            {
+                first = false;
+            }
 
-    NUM_TYPES
-};
+            ss << *it;
+        }
 
-using ValueTypeInt = std::underlying_type<ValueType>::type;
+        return ss.str();
+    }
 
-std::array<std::string, static_cast<ValueTypeInt>(ValueType::NUM_TYPES)> valueTypeStrings {
-    "Unknown",
-    "Bool",
-    "I8",
-    "U8",
-    "I16",
-    "U16",
-    "I32",
-    "U32",
-    "I64",
-    "U64",
-    "SGL",
-    "DBL",
-    "String",
-    "Path"
-};
+    class Element
+    {
+    public:
+        Element(std::string_view name) : m_name{name} {}
 
-std::string_view valueTypeString(ValueType type) {
-    return valueTypeStrings[static_cast<ValueTypeInt>(type)];
-}
+        template <typename T>
+        Element(std::string_view name, T value);
 
-class Element {
-public:
-    Element(std::string_view name) : m_name{name} {}
-    
-    template<typename T>
-    Element(std::string_view name, T value);
+        ~Element() = default;
 
-    ~Element() = default;
+        std::string getName() { return m_name; }
 
-    ValueType getType() { return static_cast<ValueType>(m_value.index()); }
+        Manager *getOwner() { return m_owner; }
 
-    std::string_view typeString() { return valueTypeString(getType()); }
+        void setOwner(Manager *owner) { m_owner = owner; }
 
-    bool isType(ValueType type) { return getType() == type; }
+        // Element Value proxy methods
+        ValueType getType() { return m_value.getType(); }
+        std::string_view typeString() { return m_value.typeString(); }
+        bool isType(ValueType type) { return m_value.isType(type); }
 
-    std::string_view getName() { return m_name; }
+        template <typename T>
+        void setValue(const T &value) { m_value.setValue<T>(value); }
 
-    template<typename T>
-    void setValue(const T& value) { m_value = value; }
+        template <typename T>
+        const T &getValue() { return m_value.getValue<T>(); }
 
-    template<typename T>
-    const T& getValue() { return std::get<T>(m_value); }
+        void setParent(Element *parent) { m_parent = parent; }
 
-private:
-    ElementValue m_value{};
+        Element *getParent() { return m_parent; }
 
-    std::string m_name{};
+        void addChild(Element *el);
+        bool removeChild(Element *el);
 
-    //Elements do not own their relatives (Manager does), using raw pointers
-    Element* m_parent = nullptr;
-    std::vector<Element*> m_children{};
-};
+        Element *lookupChild(const std::string &name);
 
-}; //namespace
+        bool matchesLookup(const Lookup& lookup) { return lookup.checkMatch(m_name, m_meta); }
 
-#endif //ConfigElement_hpp_
+        std::vector<Element *> getChildren(); // { return m_children.; }
+
+        Value *lookupMeta(const std::string &metaName);
+
+        template <typename T>
+        bool setMetaValue(const std::string &metaName, const T &value);
+
+        Hierarchy getHierarchy();
+
+        std::string hierarchyString();
+
+    private:
+        std::string m_name{};
+
+        Manager *m_owner = nullptr;
+        Value m_value{};
+
+        // Elements do not own their relatives (Manager does)
+        Element *m_parent = nullptr;
+        NamedChildMap m_children{};
+
+        MetaMap m_meta{};
+    };
+
+    Hierarchy Element::getHierarchy()
+    {
+        Hierarchy hierarchy{};
+
+        Element *el = this;
+
+        while (el)
+        {
+            hierarchy.push_back(el->getName());
+            el = el->getParent();
+        }
+
+        std::reverse(hierarchy.begin(), hierarchy.end());
+
+        return hierarchy;
+    }
+
+    Element *Element::lookupChild(const std::string &name)
+    {
+        auto it = m_children.find(name);
+
+        if (it != m_children.end())
+        {
+            return it->second;
+        }
+
+        return nullptr;
+    }
+
+    std::vector<Element *> Element::getChildren()
+    {
+        std::vector<Element *> children{};
+        for (auto it = m_children.begin(); it != m_children.end(); ++it)
+        {
+            children.push_back(it->second);
+        }
+
+        return children;
+    }
+
+    void Element::addChild(Element *el)
+    {
+        if (el)
+        {
+            m_children.insert_or_assign(std::string(el->getName()), el);
+            el->setParent(this);
+        }
+    }
+
+    bool Element::removeChild(Element *el)
+    {
+        bool found = false;
+
+        if (el)
+        {
+            auto it = m_children.find(el->getName());
+            if (it != m_children.end())
+            {
+                m_children.erase(it);
+                it->second->setParent(nullptr);
+                found = true;
+            }
+        }
+
+        return found;
+    }
+
+    Value *Element::lookupMeta(const std::string &metaName)
+    {
+        auto it = m_meta.find(metaName);
+        if (it != m_meta.end())
+        {
+            return &it->second;
+        }
+
+        return nullptr;
+    }
+
+    template <typename T>
+    bool Element::setMetaValue(const std::string &metaName, const T &value)
+    {
+        Value val;
+        val.setValue(value);
+
+        auto result = m_meta.insert_or_assign(metaName, val);
+        return result.second;
+    }
+
+}; // namespace
+
+#endif // ConfigElement_hpp_

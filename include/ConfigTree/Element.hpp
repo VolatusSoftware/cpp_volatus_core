@@ -18,26 +18,13 @@
 
 namespace Config {
 
-std::string hierarchyString(const Hierarchy& hierarchy) {
-  std::stringstream ss{};
-
-  bool first = true;
-  for (auto it = hierarchy.begin(); it != hierarchy.end(); ++it) {
-    if (!first) {
-      ss << ":";
-    } else {
-      first = false;
-    }
-
-    ss << *it;
-  }
-
-  return ss.str();
-}
+std::string hierarchyString(const Hierarchy& hierarchy);
 
 class Element {
  public:
   Element(std::string_view name) : m_name{name} {}
+
+  Element(bool isRoot) : m_isRoot{isRoot}, m_name{"<ROOT>"} {};
 
   template <typename T>
   Element(std::string_view name, T value);
@@ -65,14 +52,14 @@ class Element {
     return m_value.getValue<T>();
   }
 
-  void setParent(Element* parent) { m_parent = parent; }
+  void setParent(Element* parent);  // { m_parent = parent; }
 
   Element* getParent() { return m_parent; }
 
   void addChild(Element* el);
   bool removeChild(Element* el);
 
-  Element* lookupChild(const std::string& name);
+  Element* lookupChild(const std::string_view name);
 
   bool matchesLookup(const Lookup& lookup) {
     return lookup.checkMatch(m_name, m_meta);
@@ -89,8 +76,16 @@ class Element {
 
   std::string hierarchyString();
 
+  void setObjectType();
+  void setArrayType();
+
+  Element* lookupAncestor(const Lookup& lookup);
+  std::vector<Element*> lookupDescendents(const Lookup& lookup);
+
  private:
   std::string m_name{};
+
+  bool m_isRoot{};
 
   Manager* m_owner = nullptr;
   Value m_value{};
@@ -101,71 +96,6 @@ class Element {
 
   MetaMap m_meta{};
 };
-
-Hierarchy Element::getHierarchy() {
-  Hierarchy hierarchy{};
-
-  Element* el = this;
-
-  while (el) {
-    hierarchy.push_back(el->getName());
-    el = el->getParent();
-  }
-
-  std::reverse(hierarchy.begin(), hierarchy.end());
-
-  return hierarchy;
-}
-
-Element* Element::lookupChild(const std::string& name) {
-  auto it = m_children.find(name);
-
-  if (it != m_children.end()) {
-    return it->second;
-  }
-
-  return nullptr;
-}
-
-std::vector<Element*> Element::getChildren() {
-  std::vector<Element*> children{};
-  for (auto it = m_children.begin(); it != m_children.end(); ++it) {
-    children.push_back(it->second);
-  }
-
-  return children;
-}
-
-void Element::addChild(Element* el) {
-  if (el) {
-    m_children.insert_or_assign(std::string(el->getName()), el);
-    el->setParent(this);
-  }
-}
-
-bool Element::removeChild(Element* el) {
-  bool found = false;
-
-  if (el) {
-    auto it = m_children.find(el->getName());
-    if (it != m_children.end()) {
-      m_children.erase(it);
-      it->second->setParent(nullptr);
-      found = true;
-    }
-  }
-
-  return found;
-}
-
-Value* Element::lookupMeta(const std::string& metaName) {
-  auto it = m_meta.find(metaName);
-  if (it != m_meta.end()) {
-    return &it->second;
-  }
-
-  return nullptr;
-}
 
 template <typename T>
 bool Element::setMetaValue(const std::string& metaName, const T& value) {

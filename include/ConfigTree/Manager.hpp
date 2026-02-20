@@ -2,6 +2,7 @@
 #define ConfigManager_hpp_
 
 #include <array>
+#include <cassert>
 #include <map>
 #include <string>
 #include <vector>
@@ -21,13 +22,21 @@ class Manager {
    * be returned.
    */
   Element* obtainElement(const Hierarchy& hierarchy, bool canCreate = true);
+  Element* obtainElement(const std::string& name, bool canCreate = true);
 
-  Element* createElement(const std::string& name, Element* parent = nullptr);
+  Element* createElement(const std::string_view name,
+                         Element* parent = nullptr);
 
-  std::vector<Element*> lookupDescendents(const Lookup& lookup);
+  size_t size() { return m_elements.size(); }
 
  private:
-  std::map<std::vector<std::string>, Element> m_elements{};
+  std::map<Hierarchy, Element> m_elements{};
+
+  /**
+   * There is a root element outside of m_elements that tracks all of the
+   * unparented elements within m_elements as a convenience for lookups.
+   */
+  Element m_root{true};
 };
 
 };  // namespace Config

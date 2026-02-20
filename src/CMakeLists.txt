@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.28)
 add_subdirectory(simdjson)
 #add_subdirectory(fmtlog)
 
+add_subdirectory(ConfigTree)
+
 add_executable(example)
 
 target_sources(example
@@ -35,5 +37,6 @@ target_link_libraries(example
         volatus_proto
         simdjson
         fmtlog-static
+        ConfigTree
 )
 

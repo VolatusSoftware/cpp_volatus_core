@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <filesystem>
 #include <string>
 #include <variant>
@@ -53,12 +54,11 @@ constexpr ValueTypeInt toInt(ValueType type) {
   return static_cast<ValueTypeInt>(type);
 }
 
-std::array<std::string, static_cast<ValueTypeInt>(toInt(ValueType::TYPES_END))>
-    valueTypeStrings{"Unknown", "Object", "Array",  "Bool", "I8",  "U8",
-                     "I16",     "U16",    "I32",    "U32",  "I64", "U64",
-                     "SGL",     "DBL",    "String", "Path"};
+extern std::array<std::string,
+                  static_cast<ValueTypeInt>(toInt(ValueType::TYPES_END))>
+    valueTypeStrings;
 
-std::string_view valueTypeString(ValueType type) {
+inline std::string_view valueTypeString(ValueType type) {
   return valueTypeStrings[static_cast<ValueTypeInt>(type)];
 }
 
@@ -73,8 +73,11 @@ class Value {
 
   Value() : m_value{UnknownType{}} {}
 
-  ValueType getType()
-      const;  // { return static_cast<ValueType>(m_value.index()); }
+  ValueType getType() const {
+    if (m_value.valueless_by_exception()) return ValueType::UNKNOWN;
+
+    return static_cast<ValueType>(m_value.index());
+  }
 
   std::string_view typeString() const { return valueTypeString(getType()); }
 
@@ -87,6 +90,8 @@ class Value {
 
   // overload template function to promote c strings to std::string
   void setValue(const char* value) { setValue(std::string(value)); }
+
+  void setValue(std::string_view value) { setValue(std::string(value)); }
 
   void setObjectType() { setValue(ObjectType{}); }
   void setArrayType() { setValue(ArrayType{}); }
@@ -105,69 +110,14 @@ class Value {
   ElementVariant m_value = UnknownType{};
 };
 
-ValueType Value::getType() const {
-  if (m_value.valueless_by_exception()) return ValueType::UNKNOWN;
-
-  return static_cast<ValueType>(m_value.index());
-}
-
 template <typename T>
 bool equals(const Value& lhs, const Value& rhs) {
   return std::get<T>(lhs.m_value) == std::get<T>(rhs.m_value);
 }
 
-bool operator==(const Value& lhs, const Value& rhs) {
-  if (lhs.getType() == rhs.getType()) {
-    switch (lhs.getType()) {
-      case ValueType::ARRAY:
-      case ValueType::OBJECT:
-        return false;  // only support comparing scalar types
+bool operator==(const Value& lhs, const Value& rhs);
 
-      case ValueType::BOOL:
-        return equals<bool>(lhs, rhs);
-
-      case ValueType::DBL:
-        return equals<double>(lhs, rhs);
-
-      case ValueType::I16:
-        return equals<int16_t>(lhs, rhs);
-
-      case ValueType::I32:
-        return equals<int32_t>(lhs, rhs);
-
-      case ValueType::I64:
-        return equals<int64_t>(lhs, rhs);
-
-      case ValueType::I8:
-        return equals<int8_t>(lhs, rhs);
-
-      case ValueType::PATH:
-        return equals<Path>(lhs, rhs);
-
-      case ValueType::SGL:
-        return equals<float>(lhs, rhs);
-
-      case ValueType::STRING:
-        return equals<std::string>(lhs, rhs);
-
-      case ValueType::U16:
-        return equals<uint16_t>(lhs, rhs);
-
-      case ValueType::U32:
-        return equals<uint32_t>(lhs, rhs);
-
-      case ValueType::U64:
-        return equals<uint64_t>(lhs, rhs);
-
-      case ValueType::U8:
-        return equals<uint8_t>(lhs, rhs);
-    }
-  }
-
-  return false;
-}
-
-bool operator!=(const Value& lhs, const Value& rhs) { return !(lhs == rhs); }
+bool operator!=(const Value& lhs, const Value& rhs);
 
 }  // namespace Config
 

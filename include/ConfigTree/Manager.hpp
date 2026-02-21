@@ -21,11 +21,13 @@ class Manager {
    * of the specified hierarchy as needed and creates a new element that will
    * be returned.
    */
-  Element* obtainElement(const Hierarchy& hierarchy, bool canCreate = true);
-  Element* obtainElement(const std::string& name, bool canCreate = true);
+  Element* obtainElement(const Hierarchy& hierarchy, bool canCreate = false);
+  Element* obtainElement(const std::string& name, bool canCreate = false);
 
   Element* createElement(const std::string_view name,
                          Element* parent = nullptr);
+
+  std::vector<Element*> lookupElements(const Lookup& lookup);
 
   size_t size() { return m_elements.size(); }
 

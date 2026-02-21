@@ -31,11 +31,11 @@ void recurseJson(Manager& mgr, Element* parent, Hierarchy& hierarchy,
 
     el = parent;
   } else {
-    if (hierarchy.empty()) {
-      el = mgr.createElement("", parent);
-    } else {
+    if (!hierarchy.empty()) {
       el = mgr.createElement(hierarchy.back(), parent);
     }
+
+    // el will remain nullptr when processing the root object element.
   }
 
   int i{0};  // used for array indexing
@@ -88,8 +88,6 @@ void recurseJson(Manager& mgr, Element* parent, Hierarchy& hierarchy,
       if (nestedMeta) {
         throw std::invalid_argument(
             "Objects as Meta values are not supported.");
-      } else if (!isMeta) {
-        el->setObjectType();
       }
 
       for (dom::key_value_pair field : dom::object(jsonElem)) {

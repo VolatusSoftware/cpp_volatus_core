@@ -26,6 +26,8 @@ Element* Manager::createElement(const std::string_view name, Element* parent) {
   el = &(newEl.first->second);
   parent->addChild(el);
 
+  el->setObjectType();  // default new elements as object container
+
   return el;
 }
 
@@ -60,6 +62,10 @@ Element* Manager::obtainElement(const Hierarchy& hierarchy, bool canCreate) {
   }
 
   return child;
+}
+
+std::vector<Element*> Manager::lookupElements(const Lookup& lookup) {
+  return m_root.lookupDescendents(lookup);
 }
 
 }  // namespace Config

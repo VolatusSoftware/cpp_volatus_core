@@ -59,13 +59,19 @@ std::vector<Element*> Element::lookupDescendents(const Lookup& lookup) {
     Element* el = toCheck.back();
     toCheck.pop_back();
 
+    bool recurse = true;
+
     if (el->matchesLookup(lookup)) {
       matches.push_back(el);
-      if (lookup.recursePastMatch()) {
-        std::vector<Element*> children = el->getChildren();
-        for (auto it = children.begin(); it != children.end(); ++it) {
-          toCheck.push_back(*it);
-        }
+      if (!lookup.recursePastMatch()) {
+        recurse = false;
+      }
+    }
+
+    if (recurse) {
+      std::vector<Element*> children = el->getChildren();
+      for (auto it = children.begin(); it != children.end(); ++it) {
+        toCheck.push_back(*it);
       }
     }
   }

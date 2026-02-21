@@ -70,6 +70,7 @@ class Value {
  public:
   template <typename T>
   Value(const T& value) : m_value{value} {}
+  Value(const char* value) : m_value{std::string{value}} {}
 
   Value() : m_value{UnknownType{}} {}
 

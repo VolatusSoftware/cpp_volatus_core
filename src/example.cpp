@@ -101,17 +101,29 @@ int main() {
   std::cout << std::format("Loaded {} elements from {}\n", cm2.size(),
                            jsonLoader.getPath().string());
 
+  Config::Lookup taskLookup;
+  taskLookup.addMatchMeta("VL_Type", "VL_Task");
+  auto tasks = cm2.lookupElements(taskLookup);
+
+  count = 0;
+  std::cout << "Tasks:\n";
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    std::cout << std::format("  {}: {}\n", ++count, (*it)->getName());
+  }
+
+  Config::Lookup nodeLookup;
+  nodeLookup.addMatchMeta("VL_Type", "VL_Node");
+  auto nodes = cm2.lookupElements(nodeLookup);
+
+  count = 0;
+  std::cout << "Nodes:\n";
+  for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+    std::cout << std::format("  {}: (ID {}) {}\n", ++count,
+                             (*it)->lookupChild("Node_ID")->getValue<int64_t>(),
+                             (*it)->getName());
+  }
+
   httplib::Client cli("http://icanhazip.com");
-
-  ondemand::parser parser;
-  auto json = "{\"Volatus\":\"Hello\"}"_padded;
-  ondemand::document doc = parser.iterate(json);
-
-  std::string greet{doc["Volatus"].get_string().value()};
-
-  logi("from json: {}", greet);
-
-  std::cout << greet << " simdjson\n";
 
   if (auto res = cli.Get("/")) {
     std::cout << std::format("status: {}\nbody: {}", res->status, res->body)

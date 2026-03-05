@@ -5,6 +5,8 @@ add_subdirectory(simdjson)
 
 add_subdirectory(ConfigTree)
 
+add_subdirectory(VolatusConfig)
+
 add_executable(example)
 
 target_sources(example
@@ -38,5 +40,6 @@ target_link_libraries(example
         simdjson
         fmtlog-static
         ConfigTree
+        VolatusConfig
 )
 

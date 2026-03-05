@@ -1,35 +1,56 @@
 #ifndef volatusconfig_h_
 #define volatusconfig_h_
 
-#include <memory>
-#include <string>
+#include "ConfigTree/Manager.hpp"
+#include "ConfigTypes.hpp"
+#include "SystemConfig.hpp"
 
-#include "simdjson.h"
+namespace Volatus {
 
-using namespace simdjson;
+inline Config::Lookup& addTypeLookup(Config::Lookup& lookup, ConfigType type) {
+  return lookup.addMatchMeta(configTypeString(type));
+}
 
-class VolatusConfig : public std::enable_shared_from_this<VolatusConfig>
-{
-public:
-    VolatusConfig();
+inline Config::Lookup& addMetaLookup(Config::Lookup& lookup, ConfigType type,
+                                     const Config::Value& value) {
+  return lookup.addMatchMeta(configTypeString(type), value);
+}
 
-    //Destructor
-    ~VolatusConfig();
+class VolatusConfig {
+ public:
+  /**
+   * Creates an empty config for building programmatically or loading later on
+   */
+  VolatusConfig();
 
-    //Copy constructor
-    VolatusConfig(const VolatusConfig& other);
+  /**
+   * Loads configuration from the specified path,
+   */
+  VolatusConfig(Config::Path path);
 
-    //Move constructor
-    VolatusConfig(VolatusConfig&& from) noexcept;
+  // Destructor
+  ~VolatusConfig();
 
-    //Copy Assignment
-    VolatusConfig& operator=(const VolatusConfig& other);
+  // Copy constructor
+  VolatusConfig(const VolatusConfig& other);
 
-    //Move Assignment
-    VolatusConfig& operator=(VolatusConfig&& from);
+  // Move constructor
+  VolatusConfig(VolatusConfig&& from) noexcept;
 
-private:
-    std::unique_ptr<
+  // Copy Assignment
+  VolatusConfig& operator=(const VolatusConfig& other);
+
+  // Move Assignment
+  VolatusConfig& operator=(VolatusConfig&& from);
+
+  SystemConfig getSystem();
+
+ private:
+  std::unique_ptr<Config::Manager> m_mgr;
 };
 
-#endif //volatusconfig_h_
+VolatusConfig&& loadConfig(Config::Path);
+
+}  // namespace Volatus
+
+#endif  // volatusconfig_h_

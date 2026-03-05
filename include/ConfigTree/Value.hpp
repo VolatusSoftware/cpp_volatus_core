@@ -54,9 +54,11 @@ constexpr ValueTypeInt toInt(ValueType type) {
   return static_cast<ValueTypeInt>(type);
 }
 
-extern std::array<std::string,
-                  static_cast<ValueTypeInt>(toInt(ValueType::TYPES_END))>
-    valueTypeStrings;
+constexpr std::array<std::string,
+                     static_cast<ValueTypeInt>(toInt(ValueType::TYPES_END))>
+    valueTypeStrings = {"Unknown", "Object", "Array",  "Bool", "I8",  "U8",
+                        "I16",     "U16",    "I32",    "U32",  "I64", "U64",
+                        "SGL",     "DBL",    "String", "Path"};
 
 inline std::string_view valueTypeString(ValueType type) {
   return valueTypeStrings[static_cast<ValueTypeInt>(type)];

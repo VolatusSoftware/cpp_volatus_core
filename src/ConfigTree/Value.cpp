@@ -2,10 +2,12 @@
 
 namespace Config {
 
+/*
 std::array<std::string, static_cast<ValueTypeInt>(toInt(ValueType::TYPES_END))>
-    valueTypeStrings{"Unknown", "Object", "Array",  "Bool", "I8",  "U8",
-                     "I16",     "U16",    "I32",    "U32",  "I64", "U64",
-                     "SGL",     "DBL",    "String", "Path"};
+  valueTypeStrings{"Unknown", "Object", "Array",  "Bool", "I8",  "U8",
+                   "I16",     "U16",    "I32",    "U32",  "I64", "U64",
+                   "SGL",     "DBL",    "String", "Path"};
+                   */
 
 bool operator==(const Value& lhs, const Value& rhs) {
   if (lhs.getType() == rhs.getType()) {

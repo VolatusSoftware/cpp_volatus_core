@@ -9,16 +9,18 @@
 
 namespace Config {
 struct MatchMeta {
-  const std::string& name{};
-  const Value value{};
+  std::string name{};
+  Value value{};
 };
+
+extern const Value noValue;
 
 class Lookup {
  public:
   Lookup& matchName(std::string_view name);
 
-  Lookup& addMatchMeta(const std::string& name,
-                       const Value& value = UnknownType{});
+  Lookup& addMatchMeta(std::string_view name,
+                       const Value& value = noValue);
 
   Lookup& stopRecursePastMatch();
 

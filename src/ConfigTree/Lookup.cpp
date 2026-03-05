@@ -1,6 +1,8 @@
 #include "ConfigTree/Lookup.hpp"
 
-using namespace Config;
+namespace Config {
+
+const Value noValue{};
 
 Lookup& Lookup::reset() {
   m_nameMatch = "";
@@ -20,8 +22,8 @@ Lookup& Lookup::matchName(std::string_view name) {
   return *this;
 }
 
-Lookup& Lookup::addMatchMeta(const std::string& name, const Value& value) {
-  m_metaMatch.push_back({name, value});
+Lookup& Lookup::addMatchMeta(std::string_view name, const Value& value) {
+  m_metaMatch.push_back({std::string{name}, value});
   return *this;
 }
 
@@ -63,3 +65,5 @@ bool Lookup::checkMatch(const std::string& name, const MetaMap& meta) const {
   // survived all the comparisons/checks, must match.
   return true;
 }
+
+}  // namespace Config

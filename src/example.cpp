@@ -64,7 +64,8 @@ int main() {
                            Config::hierarchyString(c2->getHierarchy()));
 
   Config::Lookup lookup;
-  lookup.matchName("ElementName").addMatchMeta("VL_Type");
+  lookup.matchName("ElementName");
+  lookup.addMatchMeta("VL_Type");
 
   bool match = c2->matchesLookup(lookup);
   std::cout << std::format("c2 matches lookup: {}\n", match);

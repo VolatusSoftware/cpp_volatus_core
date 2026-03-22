@@ -6,6 +6,9 @@ cmake_minimum_required(VERSION 3.28)
 set(IG_PROJECT_NAME volatus_core)
 set(IG_PROJECT_VERSION 0.1.0)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 #Setting a variable to tell TexusGUI library to use basic SFML Graphics features
 # for its backend drawing capabilities. May change this to OpenGL in the future
 # (SFML uses OpenGL under the hood already) if I need to get fancier with GUIs.

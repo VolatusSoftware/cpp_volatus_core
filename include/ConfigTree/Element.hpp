@@ -48,7 +48,7 @@ class Element {
   }
 
   template <typename T>
-  const T& getValue() {
+  T getValue() {
     return m_value.getValue<T>();
   }
 

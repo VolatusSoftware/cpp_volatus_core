@@ -8,6 +8,8 @@
 #include <format>
 
 #include "ConfigTree/ConfigJson.hpp"
+#include "VolatusConfig/VolatusConfig.hpp"
+#include "Module/Queue.hpp"
 #include "httplib.h"
 #include "simdjson.h"
 
@@ -124,11 +126,55 @@ int main() {
                              (*it)->getName());
   }
 
-  httplib::Client cli("http://icanhazip.com");
+  try {
+    Volatus::VolatusConfig vcfg = Volatus::loadConfig(path);
+    auto sys = vcfg.getSystem();
+    std::cout << std::format("System name: {}\n", sys.getName());
 
-  if (auto res = cli.Get("/")) {
-    std::cout << std::format("status: {}\nbody: {}", res->status, res->body)
-              << std::endl;
+    auto clusters = sys.getClusters();
+    std::cout << std::format("Clusters:\n");
+    for (auto it = clusters.begin(); it != clusters.end(); ++it) {
+      std::cout << std::format("  {}\n", it->getName());
+    }
+
+    auto nodes = clusters[0].getNodes();
+    std::cout << std::format("Nodes:\n");
+    for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+      std::cout << std::format("  {}\n", it->getName());
+    }
+
+    auto discovery = clusters[0].getDiscoveryEndpoint();
+    if (discovery.has_value()) {
+      std::cout << std::format("Discovery Endpoint: {}\n", Volatus::endpointString(*discovery));
+    }
+
+    auto targetGroups = clusters[0].getTargetGroups();
+    std::cout << "Target Groups:\n";
+    for (auto it = targetGroups.begin(); it != targetGroups.end(); ++it) {
+      std::cout << std::format("  {}: {}\n", it->first, it->second);
+    }
+
+  } catch (std::runtime_error err) {
+    std::cout << std::format("!Error: {}\n", err.what());
+  }
+
+  Volatus::Queue<std::string> sQueue{};
+
+  using namespace std::literals::chrono_literals;
+
+  auto res = sQueue.dequeue(1s);
+  if (res) {
+    std::cout << std::format("Dequeued: {}\n", *res);
+  } else {
+    std::cout << "Timeout\n";
+  }
+
+  sQueue.enqueue(std::make_unique<std::string>("Howdy"));
+  res = sQueue.dequeue(1s);
+  if (res) {
+    std::cout << std::format("Dequeued: {}\n", *res);
+  } else {
+    std::cout << "Timeout\n";
   }
 
   sf::RenderWindow window(sf::VideoMode({800, 600}),

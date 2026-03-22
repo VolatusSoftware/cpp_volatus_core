@@ -6,9 +6,10 @@
 namespace Volatus {
 class ConfigElement {
  public:
-  ConfigElement(Config::Element elem);
+  ConfigElement(Config::Element* elem) : m_element{elem} {}
+  virtual ~ConfigElement() =default;
 
-  std::string_view getName() { return m_element->getName(); }
+  std::string getName() { return m_element->getName(); }
 
  protected:
   Config::Element* get() { return m_element; }

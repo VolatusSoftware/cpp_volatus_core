@@ -7,6 +7,8 @@ add_subdirectory(ConfigTree)
 
 add_subdirectory(VolatusConfig)
 
+add_subdirectory(Module)
+
 add_executable(example)
 
 target_sources(example
@@ -41,5 +43,6 @@ target_link_libraries(example
         fmtlog-static
         ConfigTree
         VolatusConfig
+        VolatusModule
 )
 

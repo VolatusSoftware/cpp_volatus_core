@@ -5,6 +5,8 @@
 
 #include <array>
 #include <filesystem>
+#include <format>
+#include <limits>
 #include <string>
 #include <variant>
 #include <vector>
@@ -73,6 +75,7 @@ class Value {
   template <typename T>
   Value(const T& value) : m_value{value} {}
   Value(const char* value) : m_value{std::string{value}} {}
+  Value(std::string_view value) : m_value{std::string{value}} {}
 
   Value() : m_value{UnknownType{}} {}
 
@@ -100,9 +103,7 @@ class Value {
   void setArrayType() { setValue(ArrayType{}); }
 
   template <typename T>
-  const T& getValue() {
-    return std::get<T>(m_value);
-  }
+  T getValue();
 
   friend bool operator==(const Value& lhs, const Value& rhs);
 

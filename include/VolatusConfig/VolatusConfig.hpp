@@ -4,11 +4,13 @@
 #include "ConfigTree/Manager.hpp"
 #include "ConfigTypes.hpp"
 #include "SystemConfig.hpp"
+#include "ClusterConfig.hpp"
+#include "NodeConfig.hpp"
 
 namespace Volatus {
 
 inline Config::Lookup& addTypeLookup(Config::Lookup& lookup, ConfigType type) {
-  return lookup.addMatchMeta(configTypeString(type));
+  return lookup.addMatchMeta("VL_Type", configTypeString(type));
 }
 
 inline Config::Lookup& addMetaLookup(Config::Lookup& lookup, ConfigType type,
@@ -23,10 +25,7 @@ class VolatusConfig {
    */
   VolatusConfig();
 
-  /**
-   * Loads configuration from the specified path,
-   */
-  VolatusConfig(Config::Path path);
+  VolatusConfig(std::unique_ptr<Config::Manager> cm);
 
   // Destructor
   ~VolatusConfig();
@@ -49,7 +48,7 @@ class VolatusConfig {
   std::unique_ptr<Config::Manager> m_mgr;
 };
 
-VolatusConfig&& loadConfig(Config::Path);
+VolatusConfig loadConfig(const Config::Path& path);
 
 }  // namespace Volatus
 

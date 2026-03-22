@@ -5,10 +5,14 @@
 
 namespace Volatus {
 
+  class ClusterConfig;
+
 class SystemConfig : public ConfigElement {
  public:
   SystemConfig(Config::Element* elem);
   SystemConfig(const ConfigElement& cfgElem);
+
+  std::vector<ClusterConfig> getClusters();
 };
 
 }  // namespace Volatus

@@ -19,8 +19,7 @@ class Lookup {
  public:
   Lookup& matchName(std::string_view name);
 
-  Lookup& addMatchMeta(std::string_view name,
-                       const Value& value = noValue);
+  Lookup& addMatchMeta(std::string_view name, const Value& value = noValue);
 
   Lookup& stopRecursePastMatch();
 

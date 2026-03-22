@@ -6,6 +6,8 @@ namespace Volatus {
 
 VolatusConfig::VolatusConfig() : m_mgr{std::make_unique<Config::Manager>()} {}
 
+VolatusConfig::VolatusConfig(std::unique_ptr<Config::Manager> cm) : m_mgr{std::move(cm)} {}
+
 // Destructor
 VolatusConfig::~VolatusConfig() {}
 
@@ -21,7 +23,9 @@ VolatusConfig& VolatusConfig::operator=(const VolatusConfig& other) {
 }
 
 // Move Assignment
-VolatusConfig& VolatusConfig::operator=(VolatusConfig&& from) { return *this; }
+VolatusConfig& VolatusConfig::operator=(VolatusConfig&& from) {
+  return *this;
+}
 
 SystemConfig VolatusConfig::getSystem() {
   Config::Lookup systemLookup;
@@ -38,6 +42,15 @@ SystemConfig VolatusConfig::getSystem() {
   return res[0];
 }
 
-VolatusConfig&& loadConfig(Config::Path) {}
+VolatusConfig loadConfig(const Config::Path& path) {
+  Config::Json jsonLoader{path};
+  auto mgr = std::make_unique<Config::Manager>();
+
+  jsonLoader.load(*mgr.get());
+
+  VolatusConfig cfg{std::move(mgr)};
+
+  return cfg;
+}
 
 }  // namespace Volatus

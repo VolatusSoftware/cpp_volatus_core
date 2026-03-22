@@ -134,8 +134,8 @@ bool Element::removeChild(Element* el) {
   if (el) {
     auto it = m_children.find(el->getName());
     if (it != m_children.end()) {
-      m_children.erase(it);
       it->second->setParent(nullptr);
+      m_children.erase(it);
       found = true;
     }
   }

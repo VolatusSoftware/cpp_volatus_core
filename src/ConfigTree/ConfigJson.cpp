@@ -99,9 +99,9 @@ void recurseJson(Manager& mgr, Element* parent, Hierarchy& hierarchy,
 
     case dom::element_type::STRING:
       if (isMeta) {
-        el->setMetaValue(hierarchy.back(), std::string_view(jsonElem));
+        el->setMetaValue(hierarchy.back(), std::string(jsonElem));
       } else {
-        el->setValue(std::string_view(jsonElem));
+        el->setValue(std::string(jsonElem));
       }
       break;
 

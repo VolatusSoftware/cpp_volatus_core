@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "Value.hpp"
 
@@ -15,6 +16,9 @@ using Hierarchy = std::vector<std::string>;
 using MetaMap = std::map<std::string, Value>;
 using NamedChildMap = std::map<std::string, Element*>;
 using Path = std::filesystem::path;
+
+static const std::set<std::string> truthful = {"1", "t", "T", "true", "True", "y", "Y", "yes", "Yes"};
+
 }  // namespace Config
 
 #endif  // ConfigTypes_hpp_
